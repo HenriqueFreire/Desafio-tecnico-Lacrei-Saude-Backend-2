@@ -1,0 +1,32 @@
+[project]
+name = "lacrei-saude-backend-v2"
+version = "0.1.0"
+description = "API de Gerenciamento de Consultas Médicas - Estrutura Padrão"
+authors = [
+    {name = "Henrique"}
+]
+requires-python = ">=3.12"
+dependencies = [
+    "django (>=6.0.6,<7.0.0)",
+    "djangorestframework (>=3.17.1,<4.0.0)",
+    "djangorestframework-simplejwt (>=5.5.1,<6.0.0)",
+    "psycopg2-binary (>=2.9.12,<3.0.0)",
+    "python-dotenv (>=1.2.2,<2.0.0)",
+    "django-cors-headers (>=4.9.0,<5.0.0)",
+    "drf-spectacular (>=0.29.0,<0.30.0)",
+    "requests (>=2.34.2,<3.0.0)",
+    "gunicorn (>=23.0.0)"
+]
+
+[tool.poetry]
+package-mode = false
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+      "yapf (>=0.43.0,<0.44.0)",
+      "flake8 (>=7.3.0,<8.0.0)"
+]

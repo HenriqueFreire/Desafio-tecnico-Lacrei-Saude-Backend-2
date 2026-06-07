@@ -1,0 +1,73 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: lacrei_db_v2
+          POSTGRES_USER: lacrei_user
+          POSTGRES_PASSWORD: lacrei_pass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Run Lint (Flake8)
+        run: poetry run flake8 .
+
+      - name: Run Tests
+        env:
+          DATABASE_NAME: lacrei_db_v2
+          DATABASE_USER: lacrei_user
+          DATABASE_PASSWORD: lacrei_pass
+          DATABASE_HOST: localhost
+          DATABASE_PORT: 5432
+        run: poetry run python manage.py test
+
+  build:
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        run: docker build -t lacrei-saude-backend-v2:latest .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    steps:
+      - name: Deploy to AWS
+        run: echo "Deploying to AWS Staging/Production... (Requires AWS_ACCESS_KEY_ID secrets)"
